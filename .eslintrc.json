@@ -1,0 +1,6 @@
+{
+  "extends": ["@youscience/nodejs"],
+  "rules": {
+    "prettier/prettier": "error"
+  }
+}
