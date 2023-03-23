@@ -1,8 +1,6 @@
-/* eslint-disable */
 import { z } from 'zod'
 import { makeHandler, Handler } from '@ys-types-demo/core/handler'
 import { makeZodValidator } from '@ys-types-demo/core/validator'
-import { ApiHandler, useJsonBody } from 'sst/node/api'
 
 interface User {
   id: string
@@ -11,24 +9,23 @@ interface User {
 
 declare function getUser(id: string): Promise<User | null>
 
-// the request schema
+// Request schema
 const requestSchema = z.object({
   params: z.object({
     id: z.string(),
   }),
-  // body: z.object({ ... }),
-  // query: z.object({ ... }),
 })
 
+// Response schema
 const responseSchema = z.object({
   id: z.string(),
   name: z.string(),
 })
 
-type TRequest = z.infer<typeof requestSchema>
-type TResponse = z.infer<typeof responseSchema>
+type RequestData = z.infer<typeof requestSchema>
+type ResponseBody = z.infer<typeof responseSchema>
 
-const handler: Handler<TRequest, TResponse> = async ({ params }) => {
+const handler: Handler<RequestData, ResponseBody> = async ({ params }) => {
   const { id } = params
   const user = await getUser(id)
   if (!user) {
