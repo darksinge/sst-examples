@@ -1,29 +1,18 @@
-import { APIGatewayProxyEventV2, APIGatewayEventRequestContextV2 } from 'aws-lambda'
+import { APIGatewayProxyHandlerV2 } from 'aws-lambda'
+import { Validator } from './validator'
 
-export interface LambdaRequest {
-  event: APIGatewayProxyEventV2
-  context: APIGatewayEventRequestContextV2
-  validatedData: { [key: string]: any }
-}
+export type Handler<TInput, TOutput> = (input: TInput) => Promise<TOutput>
 
-export function handler(
-  lambda: (req: LambdaRequest) => Promise<any>,
-  validation: (...args: any[]) => any,
-) {
-  return async function (event: APIGatewayProxyEventV2, context: APIGatewayEventRequestContextV2) {
-    try {
-      const validatedData = validation(event)
-      const body = await lambda({
-        event,
-        context,
-        validatedData,
-      })
-      return {
-        statusCode: 200,
-        body: JSON.stringify(body),
-      }
-    } catch (error) {
-      // ...handle error
+export function makeHandler<TInput, TOutput>(
+  handler: Handler<TInput, TOutput>,
+  validator: Validator<TInput>,
+): APIGatewayProxyHandlerV2 {
+  return async function (event) {
+    const data = validator(event)
+    const result = await handler(data)
+    return {
+      statusCode: 200,
+      body: JSON.stringify(result),
     }
   }
 }
